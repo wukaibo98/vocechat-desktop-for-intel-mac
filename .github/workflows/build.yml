@@ -23,8 +23,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
         env:
-          ELECTRON_MIRROR: https://npmmirror.com/mirors/electron/
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
           ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
+
+      - name: Install Rollup native module (macOS)
+        run: pnpm add @rollup/rollup-darwin-x64-gnu
 
       - name: Build
         shell: bash
