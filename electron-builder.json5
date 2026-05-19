@@ -4,6 +4,7 @@
 {
   appId: "chat.voce.privoce",
   asar: true,
+  electronVersion: "32.0.2",
   directories: {
     output: "release/${version}"
   },
