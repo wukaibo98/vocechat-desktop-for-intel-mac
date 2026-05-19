@@ -47,7 +47,7 @@ if (!app.requestSingleInstanceLock()) {
 // process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 // process.env["ELECTRON_DEBUG_DRAG_REGIONS"] = "true";
 let win: BrowserWindow;
-let winAbout: BrowserWindow;
+let winAbout: BrowserWindow | undefined;
 let tray: Tray;
 let triggerByQuit = false;
 let unreadCount = 0;
@@ -111,14 +111,12 @@ async function createWindow() {
     }
   });
   win.on("close", (e) => {
-    console.log("event:close", e);
     if (!triggerByQuit) {
       e.preventDefault();
       win.hide();
     }
   });
   win.on("restore", function () {
-    console.log("event:restore");
 
     win.show();
   });
@@ -182,14 +180,13 @@ const removeNewMsgTrayTip = () => {
   }
 };
 app.whenReady().then(() => {
-  console.log("event:app-ready");
 
   // 自动授予 webview 中的通知权限，让 PWA 通知正常弹出为系统通知
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
     if (permission === "notifications") {
       callback(true);
     } else {
-      callback(true);
+      callback(false);
     }
   });
 
@@ -260,26 +257,21 @@ app.whenReady().then(() => {
   // }
 });
 app.on("before-quit", (evt) => {
-  console.log("event:before-quit");
   triggerByQuit = true;
 });
 
 app.on("window-all-closed", () => {
-  // save user data
-  console.log("event:window-all-closed");
   writeUserData(Servers);
   win.destroy();
-  winAbout.destroy();
+  winAbout?.destroy();
   if (process.platform !== "darwin") app.quit();
 });
 app.on("will-quit", () => {
   // save user data
-  console.log("event:will-quit");
   writeUserData(Servers);
 });
 
 app.on("second-instance", () => {
-  console.log("event:second-instance", win);
   if (win) {
     // Focus on the main window if the user tried to open another
     if (win.isMinimized()) win.restore();
@@ -289,7 +281,6 @@ app.on("second-instance", () => {
 
 app.on("activate", () => {
   const allWindows = BrowserWindow.getAllWindows();
-  console.log("event:activate", allWindows.length);
   if (allWindows.length) {
     win.show();
     win.focus();
@@ -298,13 +289,11 @@ app.on("activate", () => {
   }
 });
 ipcMain.on("vocechat-logging", (evt, arg) => {
-  console.log("handle:vocechat-logging", arg);
 
   logger.error(JSON.stringify(arg));
   // return true;
 });
 ipcMain.on("vocechat-new-msg", (evt, msgDetail?: { channel?: string; sender?: string; content?: string }) => {
-  console.log("handle:vocechat-new-msg", msgDetail);
   // 如果是窗口隐藏状态，设置小红点提示
   setNewMsgTrayTip();
   // 弹出系统通知（窗口失焦时）
@@ -329,15 +318,12 @@ ipcMain.on("vocechat-new-msg", (evt, msgDetail?: { channel?: string; sender?: st
 // Event handler for asynchronous incoming messages
 // init redux store
 ipcMain.handle("init-servers", () => {
-  console.log("handle:init-servers", Servers.length);
   return Servers;
 });
 ipcMain.handle("data-file-path", () => {
-  console.log("handle:data-file-path", USER_DATA_PATH);
   return USER_DATA_PATH;
 });
 ipcMain.on("show-file", (evt, arg) => {
-  console.log("show-file", arg);
   switch (arg) {
     case "data":
       shell.showItemInFolder(USER_DATA_PATH);
@@ -351,11 +337,9 @@ ipcMain.on("show-file", (evt, arg) => {
 });
 // controls from non-macOS
 ipcMain.on("control-mini", () => {
-  console.log("control-mini");
   win.minimize();
 });
 ipcMain.on("control-max", () => {
-  console.log("control-max");
   if (win.isMaximized()) {
     win.unmaximize();
   } else {
@@ -363,21 +347,19 @@ ipcMain.on("control-max", () => {
   }
 });
 ipcMain.on("control-close", () => {
-  console.log("control-close");
   win.hide();
 });
 ipcMain.on("control-fullscreen", () => {
-  console.log("control-fullscreen");
   win.setFullScreen(!win.isFullScreen());
 });
 
 ipcMain.on("add-server", (event, arg) => {
-  console.log("add-server", arg);
   const { data } = arg;
   if (Servers.find((item) => item.web_url === data.web_url)) {
     return;
   }
   Servers.push(data as VocechatServer);
+  writeUserData(Servers);
 });
 ipcMain.on("remove-server", (event, arg) => {
   const { url } = arg;
@@ -385,7 +367,14 @@ ipcMain.on("remove-server", (event, arg) => {
   if (idx > -1) {
     Servers.splice(idx, 1);
   }
-  console.log("remove-server", arg, idx, Servers);
+  writeUserData(Servers);
+});
+ipcMain.on("switch-server", (_event, arg) => {
+  const { url } = arg;
+  const server = Servers.find((item) => item.web_url === url);
+  if (server && win) {
+    win.webContents.send("switch-server", { url });
+  }
 });
 // ignore certificate error
 app.commandLine.appendSwitch("ignore-certificate-errors");
@@ -398,7 +387,6 @@ app.on("certificate-error", (event, webContents, url, error, certificate, callba
 
 // share screen
 ipcMain.handle("DESKTOP_CAPTURER_GET_SOURCES", (event, opts) => {
-  console.log("DESKTOP_CAPTURER_GET_SOURCES", opts);
 
   return desktopCapturer.getSources(opts);
 });
