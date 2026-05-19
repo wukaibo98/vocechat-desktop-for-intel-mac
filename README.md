@@ -1,1 +1,1 @@
-# Vocechat Desktop 
+# Vocechat Desktop for intel mac
