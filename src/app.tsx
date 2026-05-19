@@ -19,7 +19,6 @@ function App() {
   useEffect(() => {
     const initData = async () => {
       const servers = await ipcRenderer.invoke("init-servers");
-      console.log("servers", servers);
       dispatch(initializeServers(servers));
       setServersFetched(true);
     };

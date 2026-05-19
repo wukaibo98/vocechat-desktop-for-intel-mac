@@ -19,8 +19,6 @@ const dataSlice = createSlice({
   initialState,
   reducers: {
     initializeServers(state, action: PayloadAction<VocechatServer[]>) {
-      console.log("action init servers", action.payload);
-
       state.servers = action.payload;
       state.active = action.payload[0]?.web_url;
     },
@@ -32,7 +30,6 @@ const dataSlice = createSlice({
       const _web_url = action.payload;
       if (state.servers.some((server) => server.web_url == _web_url)) {
         const filteredServers = state.servers.filter((server) => server.web_url != action.payload);
-        console.log("remove server", action.payload, filteredServers);
         if (filteredServers.length > 0) {
           state.active = filteredServers[0].web_url;
         } else {

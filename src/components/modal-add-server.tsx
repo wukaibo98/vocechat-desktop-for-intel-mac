@@ -52,8 +52,6 @@ const AddServerModal = ({ mask = true }: { mask?: boolean }) => {
   }, [isError]);
 
   useEffect(() => {
-    console.log("version", serverVersion);
-
     if (data && isSuccess && serverVersionSuccess) {
       const serverInfo = {
         name: data.name,
@@ -67,7 +65,6 @@ const AddServerModal = ({ mask = true }: { mask?: boolean }) => {
   }, [isSuccess, data, serverVersion, serverVersionSuccess]);
 
   const handleAdd = async () => {
-    console.log("add: current servers", servers);
     const { api_url } = inputs;
     let url = api_url;
     if (noServerAdded && !api_url) {
@@ -124,7 +121,7 @@ const AddServerModal = ({ mask = true }: { mask?: boolean }) => {
           className="relative flex flex-col items-center justify-center bg-white py-4 dark:bg-gray-900"
         >
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Add a Server</h2>
-          <div className="relative mb-3 mt-8 flex w-full flex-col items-start gap-1">
+          <div className="relative mb-3 mt-6 flex w-full flex-col items-start gap-1.5">
             <label className="text-sm text-gray-900 dark:text-gray-100" htmlFor="api_url">
               Server URL
             </label>

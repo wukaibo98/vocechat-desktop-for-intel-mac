@@ -32,7 +32,6 @@ const ServerList = ({
   const dispatch = useDispatch();
   const newMsgMap = useAppSelector((store) => store.data.newMsgMap);
   const handleSwitch = (evt: MouseEvent<HTMLLIElement>) => {
-    console.log("switch");
     const { url } = evt.currentTarget.dataset;
     if (url == activeURL) return;
     if (url) {
@@ -88,15 +87,13 @@ const ServerList = ({
                 <div
                   className={clsx(
                     "app-no-drag relative",
-                    "flex h-9 w-9 items-center justify-center rounded hover:bg-gray-500/10 dark:hover:bg-gray-500/50",
-                    web_url === activeURL && "bg-white dark:bg-gray-500/50"
+                    "flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-gray-500/10 dark:hover:bg-gray-500/50",
+                    web_url === activeURL && "bg-white shadow-sm dark:bg-gray-500/50"
                   )}
                 >
                   <img
                     className="h-6 w-6 rounded-full"
-                    src={`${
-                      api_url || web_url
-                    }/api/resource/organization/logo?t=${new Date().getTime()}`}
+                    src={`${api_url || web_url}/api/resource/organization/logo`}
                     alt="logo"
                   />
                   {hasNewMsg && (
@@ -105,7 +102,7 @@ const ServerList = ({
                 </div>
               </ServerTip>
               {activeURL == web_url && (
-                <div className="absolute right-0 top-0 h-full w-0.5 rounded bg-primary-500"></div>
+                <div className="absolute right-0 top-1/4 h-1/2 w-1 rounded-full bg-primary-500"></div>
               )}
             </li>
           </Tippy>

@@ -30,7 +30,7 @@ const TitleBar = () => {
   return (
     <header
       onDoubleClick={handleControl.bind(null, "max")}
-      className="app-drag relative flex h-12 w-full items-center justify-center gap-2 border-b border-black/5 bg-gray-300 dark:bg-gray-700"
+      className="app-drag relative flex h-12 w-full items-center justify-center gap-2 border-b border-black/5 bg-gray-300/80 backdrop-blur-sm dark:bg-gray-700/80"
     >
       <img className="h-5 w-5" src={IconLogo} />
       <span className="text-sm text-gray-800 dark:text-gray-200">VoceChat</span>

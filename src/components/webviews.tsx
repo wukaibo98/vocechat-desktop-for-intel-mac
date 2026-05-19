@@ -2,9 +2,8 @@ import { updateNewMsgMap } from "@/app/slices/data";
 import { VocechatServer } from "@/types/common";
 import clsx from "clsx";
 import { ipcRenderer, WebviewTag } from "electron";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
-// import React from "react";
 
 type Props = {
   activeURL: string;
@@ -15,32 +14,33 @@ type Props = {
 
 const WebviewList = ({ servers, activeURL, handleReload, setReloading }: Props) => {
   const dispatch = useDispatch();
+  // Fix stale closure: keep latest refs for callbacks
+  const handleReloadRef = useRef(handleReload);
+  const setReloadingRef = useRef(setReloading);
+  handleReloadRef.current = handleReload;
+  setReloadingRef.current = setReloading;
+
   useEffect(() => {
     const webviews = [...document.querySelectorAll("webview")] as WebviewTag[];
     const cleanups: (() => void)[] = [];
     webviews.forEach((webview) => {
       const server = webview.getAttribute("data-src") || "default";
       const onThemeColorChanged = (evt: Electron.DidChangeThemeColorEvent) => {
-        console.log("theme color changed", evt.themeColor);
         if (evt.themeColor == "#123456") {
-          handleReload();
+          handleReloadRef.current();
         }
       };
       const onDidFinishLoad = () => {
         if (webview.dataset?.visible == "true") {
-          console.log("load finish reloading false", webview.src);
-          setReloading(false);
+          setReloadingRef.current(false);
         }
       };
       const onDidFailLoad = () => {
         if (webview.dataset?.visible == "true") {
-          console.log("load fail reloading false", webview.src);
-          setReloading(false);
+          setReloadingRef.current(false);
         }
       };
       const onDomReady = () => {
-        const url = webview.dataset.src;
-        console.log(`${url} dom-ready`);
         webview.executeJavaScript(`
           (function() {
             const OriginalNotification = window.Notification;
@@ -71,8 +71,8 @@ const WebviewList = ({ servers, activeURL, handleReload, setReloading }: Props) 
           if (jsonStr) {
             try {
               msgDetail = JSON.parse(jsonStr);
-            } catch (err) {
-              // 解析失败，使用默认通知
+            } catch {
+              // fallback to default notification
             }
           }
           ipcRenderer.send("vocechat-new-msg", msgDetail);
@@ -97,10 +97,11 @@ const WebviewList = ({ servers, activeURL, handleReload, setReloading }: Props) 
     return () => {
       cleanups.forEach((fn) => fn());
     };
-  }, []);
+  }, [dispatch]);
 
   return servers.map((server) => {
     const { web_url } = server;
+    const isActive = activeURL == web_url;
     return (
       <webview
         //@ts-ignore
@@ -111,11 +112,11 @@ const WebviewList = ({ servers, activeURL, handleReload, setReloading }: Props) 
         disablewebsecurity="true"
         key={web_url}
         className={clsx(
-          "absolute left-0 top-0 h-full w-full",
-          activeURL == web_url ? "visible" : "invisible"
+          "absolute left-0 top-0 h-full w-full transition-opacity duration-200",
+          isActive ? "visible opacity-100" : "invisible opacity-0"
         )}
         useragent={`${navigator.userAgent} ${process.platform}`}
-        data-visible={activeURL == web_url}
+        data-visible={isActive}
         data-src={web_url}
         src={web_url}
       ></webview>

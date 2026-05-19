@@ -10,7 +10,6 @@ const About = () => {
   const [filePath, setFilePath] = useState("");
   useEffect(() => {
     ipcRenderer.invoke("data-file-path").then((path) => {
-      console.log("data-file-path", path);
       setFilePath(path);
     });
   }, []);

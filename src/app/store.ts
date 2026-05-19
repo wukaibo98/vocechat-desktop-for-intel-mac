@@ -13,8 +13,6 @@ import dataReducer from "./slices/data";
 const config = {
   // Overwrite existing state with incoming state
   receiveState: (prevState, nextState) => {
-    console.log("receiveState", prevState, nextState);
-
     return nextState;
   },
   broadcastChannelOption: {

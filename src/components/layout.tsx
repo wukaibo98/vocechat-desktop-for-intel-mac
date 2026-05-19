@@ -69,7 +69,6 @@ const Layout = () => {
     setRemoveServer(web_url);
   };
 
-  console.log("layout servers", servers);
   if (servers.length === 0) {
     return (
       <>
@@ -92,7 +91,7 @@ const Layout = () => {
         <aside
           className={clsx(
             "relative",
-            "flex h-full w-[66px] flex-col items-center gap-3 bg-neutral-200 dark:bg-gray-900",
+            "flex h-full w-[66px] flex-col items-center gap-3 bg-neutral-200/90 backdrop-blur-sm dark:bg-gray-900/90",
             contextMenuVisible ? "" : "app-drag",
             isMac ? "pt-8" : "pt-1"
           )}
@@ -112,7 +111,7 @@ const Layout = () => {
             <div
               role="button"
               onClick={handleAddServer}
-              className="app-no-drag group flex h-9 w-9 cursor-pointer items-center justify-center rounded hover:bg-gray-500/50"
+              className="app-no-drag group flex h-9 w-9 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-gray-500/50"
             >
               <IconAdd className="outline-none group-hover:fill-white" />
             </div>
@@ -122,7 +121,7 @@ const Layout = () => {
             <button
               disabled={reloading}
               onClick={handleReload}
-              className="app-no-drag  group flex h-9 w-9 cursor-pointer items-center justify-center rounded hover:bg-gray-500/50"
+              className="app-no-drag group flex h-9 w-9 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-gray-500/50"
             >
               <IconRefresh
                 className={clsx(
@@ -135,7 +134,7 @@ const Layout = () => {
           <button
             title="Open DevTools"
             onClick={handleOpenWebviewDevTools}
-            className="app-no-drag group absolute bottom-4 left-4 flex h-9 w-9 cursor-pointer items-center justify-center rounded  hover:bg-gray-500/50"
+            className="app-no-drag group absolute bottom-4 left-4 flex h-9 w-9 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-gray-500/50"
           >
             <IconDebug className="invisible outline-none group-hover:visible group-hover:stroke-white" />
           </button>
