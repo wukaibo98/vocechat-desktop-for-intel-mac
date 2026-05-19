@@ -1,6 +1,7 @@
 name: Build VoceChat App
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "v*"
