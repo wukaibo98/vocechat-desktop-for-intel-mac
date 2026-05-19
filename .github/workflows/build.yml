@@ -2,47 +2,17 @@ name: Build VoceChat App
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "v*"
 
 jobs:
-  create-release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Create GitHub Release
-        run: |
-          tag="${GITHUB_REF#refs/tags/}"
-          gh release create "$tag" \
-            --title "VoceChat $tag" \
-            --generate-notes \
-            --draft
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   build:
-    needs: create-release
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            eb_flag: --mac
-          - os: ubuntu-latest
-            eb_flag: --linux
-          - os: windows-latest
-            eb_flag: --win
-
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -53,37 +23,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install
         env:
-          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+          ELECTRON_MIRROR: https://npmmirror.com/mirors/electron/
           ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
-
-      - name: Install Rollup native module (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: pnpm add @rollup/rollup-linux-x64-gnu
-
-      - name: Install Rollup native module (Windows)
-        if: matrix.os == 'windows-latest'
-        run: pnpm add @rollup/rollup-win32-x64-msvc
 
       - name: Build
         shell: bash
         run: |
           pnpm exec tsc
           pnpm exec vite build
-          pnpm exec electron-builder build ${{ matrix.eb_flag }} --publish never
+          pnpm exec electron-builder build --mac --x64 --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
           ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
           ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
 
-      - name: Upload artifacts to Release
-        shell: bash
-        run: |
-          tag="${GITHUB_REF#refs/tags/}"
-          find release -maxdepth 1 -type f \
-            \( -name "*.dmg" -o -name "*.zip" -o -name "*.exe" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" -o -name "*.msi" \) \
-          | while read -r f; do
-            echo "Uploading: $f"
-            gh release upload "$tag" "$f" --clobber
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoceChat-Mac-Intel
+          path: release/**/*.dmg
