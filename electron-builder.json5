@@ -46,7 +46,7 @@
   publish: {
     provider: "github",
     owner: "privoce",
-    repo: "vocechat-desktop",
+    repo: "vocechat-desktop-for-intel-mac",
     releaseType: "release"
   }
 }
