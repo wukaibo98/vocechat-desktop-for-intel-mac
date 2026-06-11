@@ -24,8 +24,8 @@ export function readUserData() {
         web_url:
           process.env.NODE_ENV === "development"
             ? "http://localhost:3009"
-            : "https://privoce.voce.chat",
-        api_url: "https://dev.voce.chat"
+            : "https://vocechat.wukaibo.top:54321",
+        api_url: "https://vocechat.wukaibo.top:54321"
       }
     ];
   }
